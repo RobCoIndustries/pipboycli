@@ -1,6 +1,6 @@
 {
   "name": "pipboycli",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "A blessed cli for your Fallout 4 PipBoy",
   "main": "index.js",
   "bin": {
@@ -10,7 +10,7 @@
     "prebuild": "mkdirp lib && npm run clean",
     "build": "npm run build:es5",
     "build:es5": "babel src --out-dir lib/ --source-maps",
-    "clean": "rimraf lib/*" 
+    "clean": "rimraf lib/*"
   },
   "repository": {
     "type": "git",
@@ -34,6 +34,8 @@
     "rimraf": "^2.4.4"
   },
   "babel": {
-    "presets": ["es2015"]
+    "presets": [
+      "es2015"
+    ]
   }
 }
