@@ -1,0 +1,39 @@
+{
+  "name": "pipboycli",
+  "version": "0.0.0",
+  "description": "A blessed cli for your Fallout 4 PipBoy",
+  "main": "index.js",
+  "bin": {
+    "pipboycli": "./lib/index.js"
+  },
+  "scripts": {
+    "prebuild": "mkdirp lib && npm run clean",
+    "build": "npm run build:es5",
+    "build:es5": "babel src --out-dir lib/ --source-maps",
+    "clean": "rimraf lib/*" 
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RobCoIndustries/pipboycli.git"
+  },
+  "author": "Kyle Kelley <rgbkrk@gmail.com>",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/RobCoIndustries/pipboycli/issues"
+  },
+  "homepage": "https://github.com/RobCoIndustries/pipboycli#readme",
+  "dependencies": {
+    "blessed": "^0.1.81",
+    "pipboylib": "^1.1.0"
+  },
+  "devDependencies": {
+    "babel": "^6.1.18",
+    "babel-cli": "^6.2.0",
+    "babel-preset-es2015": "^6.1.18",
+    "mkdirp": "^0.5.1",
+    "rimraf": "^2.4.4"
+  },
+  "babel": {
+    "presets": ["es2015"]
+  }
+}
