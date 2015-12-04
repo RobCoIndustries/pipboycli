@@ -10,7 +10,8 @@
     "prebuild": "mkdirp lib && npm run clean",
     "build": "npm run build:es5",
     "build:es5": "babel src --out-dir lib/ --source-maps",
-    "clean": "rimraf lib/*"
+    "clean": "rimraf lib/*",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
