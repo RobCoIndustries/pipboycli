@@ -33,19 +33,6 @@ const {
   channels
 } = constants
 
-const stylesheet = {
-  bordered: {
-    border: {
-      type: 'line'
-    },
-    style: {
-      border: {
-        fg: 'green'
-      }
-    }
-  }
-};
-
 const launchCli = function launchCli(subject) {
   connected(subject)
     .then(handshake => {
@@ -64,8 +51,13 @@ const launchCli = function launchCli(subject) {
         left: "60%",
         width: "40%",
         height: "10%",
-        class: stylesheet.bordered,
+        border: {
+            type: 'line'
+        },
         style: {
+          border: {
+            fg: 'green'
+          },
           bar: {
             bg: 'green'
           }
@@ -125,4 +117,3 @@ discover()
   .catch(err => {
     throw err
   })
-
