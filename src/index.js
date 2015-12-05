@@ -88,15 +88,17 @@ const launchCli = function launchCli(subject) {
         })
 
       playerInfo
-        .map(x => { return { CurrHP: x.CurrHP, MaxHP: x.MaxHP }; })
-        .distinctUntilChanged()
-        .subscribe(p => {
+        .map(p => {
           var percent = 0;
           if (p.MaxHP > 0) {
             percent = p.CurrHP / p.MaxHP;
           }
+          return { CurrHP: p.CurrHP, MaxHP: p.MaxHP,  filled: Math.round(percent*100) };
+				})
+        .distinctUntilChanged()
+        .subscribe(p => {
           hpMeter.label = `HP - ${p.CurrHP}`;
-          hpMeter.filled = percent * 100;
+          hpMeter.filled = p.filled;
           screen.render();
         })
     })
