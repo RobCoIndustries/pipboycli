@@ -2,6 +2,8 @@
 
 import blessed from 'blessed';
 
+import path from 'path';
+
 import contrib from 'blessed-contrib';
 
 import {
@@ -37,7 +39,7 @@ const {
   channels
 } = constants
 
-var plugins = require('./plugins')
+var plugins = require('./default-plugins')
 
 class PipBoyClient {
   constructor(database, screen) {
@@ -97,6 +99,23 @@ const launchCli = function launchCli(subject) {
   var pbc = new PipBoyClient(database, screen);
   for (var plugin of plugins) {
     pbc.register(plugin);
+  }
+
+  var extraPlugins = [];
+  let extras = path.join(process.cwd(), "plugins.js")
+
+  try {
+    extraPlugins = require(extras)
+  } catch(e) {
+    pbc.log("No extra plugins loaded from ", extras)
+  }
+
+  for (var plugin of extraPlugins) {
+    try {
+      pbc.register(plugin);
+    } catch (e) {
+      pbc.log("Unable to register", plugin)
+    }
   }
 }
 
