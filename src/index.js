@@ -2,6 +2,8 @@
 
 import blessed from 'blessed';
 
+import contrib from 'blessed-contrib';
+
 import {
   connection,
   decoding,
@@ -35,6 +37,43 @@ const {
   channels
 } = constants
 
+var plugins = require('./plugins')
+
+class PipBoyClient {
+  constructor(database, screen) {
+    this.database = database;
+    this.screen = screen;
+
+    this.logger = blessed.log( {
+      fg: "white",
+      label: "log",
+      height: "50%",
+      width: "50%",
+      tags: true,
+      border: {
+        type: "line",
+        fg: "gray"
+      }
+    })
+
+    this.screen.append(this.logger);
+
+    this.database.map(db => db.PlayerInfo.PlayerName)
+      .distinctUntilChanged()
+      .subscribe(name => {
+        screen.title = 'PipBoy - ' + name;
+      })
+  }
+
+  log(args){
+    this.logger.log.apply(this.logger, arguments)
+  }
+
+  register(f) {
+    this.screen.append(f(this));
+  }
+}
+
 const launchCli = function launchCli(subject) {
   /**
    * Rendering the screen.
@@ -45,30 +84,9 @@ const launchCli = function launchCli(subject) {
     title: 'PipBoy'
   });
 
-  const hpMeter = blessed.progressbar({
-    label: 'HP',
-    top: "60%",
-    left: "60%",
-    width: "40%",
-    height: "10%",
-    border: {
-        type: 'line'
-    },
-    style: {
-      border: {
-        fg: 'green'
-      },
-      bar: {
-        bg: 'green'
-      }
-    }
-  });
-  screen.append(hpMeter);
-
   screen.key(['escape', 'q', 'C-c'], function(ch, key) {
     return process.exit(0);
   });
-
 
   const database = subject
     .filter(x => x.type === channels.DatabaseUpdate)
@@ -76,32 +94,11 @@ const launchCli = function launchCli(subject) {
     .scan(aggregateBundles, {})
     .map(x => generateTreeFromDatabase(x))
 
-  const playerInfo = database
-    .map(x => x.PlayerInfo)
-
-  playerInfo.map(p => p.PlayerName)
-    .distinctUntilChanged()
-    .subscribe(name => {
-      screen.title = 'PipBoy - ' + name;
-    })
-
-  playerInfo
-    .map(p => {
-      var percent = 0;
-      if (p.MaxHP > 0) {
-        percent = p.CurrHP / p.MaxHP;
-      }
-      return { CurrHP: p.CurrHP, MaxHP: p.MaxHP,  filled: Math.round(percent*100) };
-  	})
-    .distinctUntilChanged()
-    .subscribe(p => {
-      hpMeter.label = `HP - ${p.CurrHP}`;
-      hpMeter.filled = p.filled;
-      screen.render();
-    })
+  var pbc = new PipBoyClient(database, screen);
+  for (var plugin of plugins) {
+    pbc.register(plugin);
+  }
 }
-
-
 
 discover()
   .then(server => createSocket(server.info.address))
