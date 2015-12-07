@@ -119,21 +119,26 @@ const launchCli = function launchCli(subject) {
   }
 }
 
-discover()
-  .then(server => createSocket(server.info.address))
-  .then(socket => {
-    sendPeriodicHeartbeat(socket)
-    return createConnectionSubject(socket)
-  })
-  .then(function(subject) {
-    connected(subject).then(handshake => {
-      return launchCli(subject);
-    }).catch(err => {
-      console.error('Couldn\'t establish connection!', err);
-      console.error(err.stack);
-      throw err;
+function main() {
+  // TODO: use createDiscovery and prompt user to pick if there are multiple
+  discover()
+    .then(server => createSocket(server.info.address))
+    .then(socket => {
+      sendPeriodicHeartbeat(socket)
+      return createConnectionSubject(socket)
     })
-  })
-  .catch(err => {
-    throw err
-  })
+    .then(function(subject) {
+      connected(subject).then(handshake => {
+        return launchCli(subject);
+      }).catch(err => {
+        console.error('Couldn\'t establish connection!', err);
+        console.error(err.stack);
+        throw err;
+      })
+    })
+    .catch(err => {
+      throw err
+    })
+}
+
+main()
