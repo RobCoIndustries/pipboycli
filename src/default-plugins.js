@@ -89,15 +89,30 @@ var radio = function radio(pbc) {
     left: "50%",
     width: "50%",
     height: "30%",
+    mouse: true,
+    keys: true,
     border: {
         type: 'line'
     },
     style: {
       border: {
+        fg: 'gray',
+        bg: 'black'
+      },
+      selected: {
+        bg: 'gray',
+        fg: 'black'
+      },
+      item: {
+        bg: 'black',
         fg: 'gray'
       }
     }
   });
+
+  radioList.on('select', function(){
+    pbc.log(arguments);
+  })
 
   var textify = function (station) {
     let active = 	station.active ? '■' : ' ';
@@ -108,10 +123,13 @@ var radio = function radio(pbc) {
     .map(db => db.Radio)
     .distinctUntilChanged()
     .subscribe(stations => {
+      for (let station of stations) {
+        if(!station.inRange) {
+          continue
+        }
+        radioList.add(textify(station))
+      }
       pbc.log(stations);
-      let stationSelections = stations.map(textify);
-      radioList.setItems(stationSelections);
-      radioList.select(0);
       pbc.screen.render();
     })
   pbc.screen.append(radioList);
