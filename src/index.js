@@ -1,17 +1,19 @@
 #!/usr/bin/env node
 
+import path from 'path';
 import blessed from 'blessed';
 
-import path from 'path';
+import plugins from './default-plugins';
 
-import contrib from 'blessed-contrib';
+import * as pipboylib from 'pipboylib'
+global.pb = pipboylib
 
-import {
+const {
   connection,
   decoding,
   status,
   constants
-} from 'pipboylib';
+} = pipboylib;
 
 import {
   Observable
@@ -39,13 +41,20 @@ const {
   channels
 } = constants
 
-var plugins = require('./default-plugins')
-
 class PipBoyClient {
-  constructor(database, screen) {
-    this.database = database;
-    this.screen = screen;
+  constructor(subject) {
+    this.screen = blessed.screen({
+      autoPadding: true,
+      smartCSR: true,
+      title: 'PipBoy'
+    });
 
+    this.screen.key(['escape', 'q', 'C-c'], function(ch, key) {
+      return process.exit(0);
+    });
+
+    // Set up the logger to be used as
+    //   this.log(message)
     this.logger = blessed.log( {
       fg: "white",
       label: "log",
@@ -57,13 +66,21 @@ class PipBoyClient {
         fg: "gray"
       }
     })
-
     this.screen.append(this.logger);
+
+    this.subject = subject;
+    const database = subject
+      .filter(x => x.type === channels.DatabaseUpdate)
+      .map(x => parseBinaryDatabase(x.payload))
+      .scan(aggregateBundles, {})
+      .map(x => generateTreeFromDatabase(x))
+
+    this.database = database;
 
     this.database.map(db => db.PlayerInfo.PlayerName)
       .distinctUntilChanged()
       .subscribe(name => {
-        screen.title = 'PipBoy - ' + name;
+        this.screen.title = 'PipBoy - ' + name;
       })
   }
 
@@ -72,31 +89,14 @@ class PipBoyClient {
   }
 
   register(f) {
-    this.screen.append(f(this));
+    // Literally, f this
+    f(this);
   }
 }
 
 const launchCli = function launchCli(subject) {
-  /**
-   * Rendering the screen.
-   */
-  const screen = blessed.screen({
-    autoPadding: true,
-    smartCSR: true,
-    title: 'PipBoy'
-  });
 
-  screen.key(['escape', 'q', 'C-c'], function(ch, key) {
-    return process.exit(0);
-  });
-
-  const database = subject
-    .filter(x => x.type === channels.DatabaseUpdate)
-    .map(x => parseBinaryDatabase(x.payload))
-    .scan(aggregateBundles, {})
-    .map(x => generateTreeFromDatabase(x))
-
-  var pbc = new PipBoyClient(database, screen);
+  var pbc = new PipBoyClient(subject);
   for (var plugin of plugins) {
     pbc.register(plugin);
   }
@@ -115,6 +115,7 @@ const launchCli = function launchCli(subject) {
       pbc.register(plugin);
     } catch (e) {
       pbc.log("Unable to register", plugin)
+      pbc.log(e)
     }
   }
 }
