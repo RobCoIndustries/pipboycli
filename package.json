@@ -26,7 +26,8 @@
   "homepage": "https://github.com/RobCoIndustries/pipboycli#readme",
   "dependencies": {
     "blessed": "^0.1.81",
-    "pipboylib": "^1.1.0"
+    "pipboylib": "^1.1.0",
+    "rx": "^4.0.7"
   },
   "devDependencies": {
     "babel": "^6.1.18",
